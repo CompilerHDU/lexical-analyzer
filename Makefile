@@ -23,6 +23,6 @@ complier: lex yacc main
 run: complier
 
 clean:
-	del /s "src\lexer.cpp" "src\parser.cpp" "src\parser.h" "src\pch.h.gch" "$(TARGET)" "*.o" ".\bin\*"
+	del /s "src\lexer.cpp" "src\parser.cpp" "src\parser.h" "src\pch.h.gch" "$(TARGET)" "*.o"
 	del /s "src\*.output"
-	del /s test\*\*.out test\*\*.output
+	del /s *.exe
