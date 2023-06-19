@@ -334,31 +334,777 @@ struct Label {
 
 ### 例1
 
+#### 输入
 
+```[c++]
+int main(){
+    printf("test\n");
+    return 0;
+}
+```
 
+#### 输出
 
+```[arm]
+# SysY compiler.
+	.section	.rodata
+.LC0:
+	.string	"test\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$12, %esp
+	movl	$.LC0, %eax
+	pushl	%eax
+	call	printf
+	addl	$4, %esp
+	movl	$0, %eax
+	jmp		.LRET_main
+.LRET_main:
+	addl	$12, %esp
+	popl	%ebp
+	ret
+```
 
 ### 例2
 
+#### 输入
 
+```[c++]
+int main(){
+    int a=0xffffffff;
+    if(a==-1){
+        printf("True!\n");
+    }else{
+        printf("False!\n");
+    }
+    return 0;
+}
+```
 
+#### 输出
 
+```[arm]
+# SysY compiler.
+	.section	.rodata
+.LC0:
+	.string	"True!\n"
+.LC1:
+	.string	"False!\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$16, %esp
+	movl	$2147483647, %eax
+	movl	%eax, -12(%ebp)
+.L0:
+	movl	-12(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	negl	%eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	sete	%al
+	je		.L1
+	jmp		.L2
+.L1:
+	movl	$.LC0, %eax
+	pushl	%eax
+	call	printf
+	addl	$4, %esp
+	jmp		.L3
+.L2:
+	movl	$.LC1, %eax
+	pushl	%eax
+	call	printf
+	addl	$4, %esp
+.L3:
+	movl	$0, %eax
+	jmp		.LRET_main
+.LRET_main:
+	addl	$16, %esp
+	popl	%ebp
+	ret
 
-
+```
 
 ### 例3
 
+#### 输入
 
+```[c++]
+int a;
 
+int myFunc(int a, int b, int c) {
+	a = 2;
+	{
+		int c;
+		c = 0;
+		if (c != 0) {
+			return 0;
+		}
+	}
+	while (b > 0) {
+		b = b - 1;
+	}
+	return (a)+(b);
+}
 
+int main() {
+	a = (3);
+	int b;
+	b = myFunc(1, 2, 1);
+    printf("%d\n",a+b);
+	return 0;
+}
+```
 
+#### 输出
+
+```[arm]
+# SysY compiler.
+	.text
+	.data
+	.align	4
+	.globl	a
+	.type	a, @object
+	.size	a, 4
+a:
+	.long	0
+	.section	.rodata
+.LC0:
+	.string	"%d\n"
+	.text
+	.globl	myFunc
+	.type	myFunc, @function
+myFunc:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$16, %esp
+	movl	$2, %eax
+	movl	%eax, 8(%ebp)
+	movl	$0, %eax
+	movl	%eax, -12(%ebp)
+.L0:
+	movl	-12(%ebp), %eax
+	pushl	%eax
+	movl	$0, %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setne	%al
+	jne		.L1
+	jmp		.L2
+.L1:
+	movl	$0, %eax
+	jmp		.LRET_myFunc
+.L2:
+.L3:
+	movl	12(%ebp), %eax
+	pushl	%eax
+	movl	$0, %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setg	%al
+	jg		.L4
+	jmp		.L5
+.L4:
+	movl	12(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	movl	%eax, %ebx
+	popl	%eax
+	subl	%ebx, %eax
+	movl	%eax, 12(%ebp)
+	jmp		.L3
+.L5:
+	movl	8(%ebp), %eax
+	pushl	%eax
+	movl	12(%ebp), %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	jmp		.LRET_myFunc
+.LRET_myFunc:
+	addl	$16, %esp
+	popl	%ebp
+	ret
+	.globl	main
+	.type	main, @function
+main:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$16, %esp
+	movl	$3, %eax
+	movl	%eax, a
+	movl	$1, %eax
+	pushl	%eax
+	movl	$2, %eax
+	pushl	%eax
+	movl	$1, %eax
+	pushl	%eax
+	call	myFunc
+	addl	$12, %esp
+	movl	%eax, -12(%ebp)
+	movl	a, %eax
+	pushl	%eax
+	movl	-12(%ebp), %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	pushl	%eax
+	movl	$.LC0, %eax
+	pushl	%eax
+	call	printf
+	addl	$8, %esp
+	movl	$0, %eax
+	jmp		.LRET_main
+.LRET_main:
+	addl	$16, %esp
+	popl	%ebp
+	ret
+```
 
 ### 例4
 
+#### 输入
 
+```[c++]
+int n;
+int Merge(int *array, int low, int middle, int high)
+{
+    int n1;
+    n1 = middle - low + 1;
+    int n2;
+    n2 = high - middle;
+    int L[10];
+    int R[10];
+    int i;
+    i = 0;
+    int j;
+    j = 0;
+ 
+    while(i < n1){
+        L[i] = array[i + low];
+        i = i + 1;        
+    }
+    while(j < n2){
+        R[j] = array[j + middle  +1];
+        j = j + 1;        
+    }
+    i = 0;
+    j = 0;
+    int k;
+    k = low;
+    while(i!=n1 && j!= n2)
+    {   
+        if(L[i] < R[j] + 1){
+            array[k] = L[i];
+            k = k + 1;
+            i = i + 1;
+        }
+        else{
+            array[k] = R[j];
+            k = k + 1;
+            j = j + 1;
+        }
+    }
+    while(i < n1){
+        array[k] = L[i];
+        k = k + 1;
+        i = i + 1;
+        
+    }
+    while(j < n2){
+        array[k] = R[j];
+        k = k + 1;
+        j = j + 1;
+    }
+    return 0;
+}
+ 
+int MergeSort(int *array, int p, int q)
+{
+    if(p < q)
+    {
+        int mid;
+        mid = (p+q)/2;
+        int tmp;
+        tmp = MergeSort(array, p, mid);
+        tmp = mid + 1;
+        tmp = MergeSort(array, tmp, q);
+        tmp = Merge(array,p, mid, q);
+    }
+    return 0;
+}
 
+int main(){
+    n = 10;
+    int a[10];
+    a[0]=4;a[1]=3;a[2]=9;a[3]=2;a[4]=0;
+    a[5]=1;a[6]=6;a[7]=5;a[8]=7;a[9]=8;
+    int i;
+    i = 0;
+    int tmp;
+    tmp = n - 1;
+    i = MergeSort(a, i, tmp);
+    while (i < n) {
+        tmp = a[i];
+        printf("%d",tmp);
+        tmp = 10;
+        printf("%c",tmp);
+        i = i + 1;
+    }
+    return 0;
+}
+```
 
+#### 输出
 
-
-
-### 例5
+```[arm]
+# SysY compiler.
+	.text
+	.data
+	.align	4
+	.globl	n
+	.type	n, @object
+	.size	n, 4
+n:
+	.long	0
+	.section	.rodata
+.LC0:
+	.string	"%d"
+.LC1:
+	.string	"%c"
+	.text
+	.globl	Merge
+	.type	Merge, @function
+Merge:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$112, %esp
+	movl	16(%ebp), %eax
+	pushl	%eax
+	movl	12(%ebp), %eax
+	movl	%eax, %ebx
+	popl	%eax
+	subl	%ebx, %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -12(%ebp)
+	movl	20(%ebp), %eax
+	pushl	%eax
+	movl	16(%ebp), %eax
+	movl	%eax, %ebx
+	popl	%eax
+	subl	%ebx, %eax
+	movl	%eax, -16(%ebp)
+	movl	$0, %eax
+	movl	%eax, -100(%ebp)
+	movl	$0, %eax
+	movl	%eax, -104(%ebp)
+.L0:
+	movl	-100(%ebp), %eax
+	pushl	%eax
+	movl	-12(%ebp), %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setl	%al
+	jl		.L1
+	jmp		.L2
+.L1:
+	movl	-100(%ebp), %eax
+	pushl	%eax
+	movl	12(%ebp), %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	8(%ebp,%eax,4), %eax
+	pushl	%eax
+	movl	-100(%ebp), %eax
+	popl	%ebx
+	movl	%ebx, -20(%ebp,%eax,4)
+	movl	-100(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -100(%ebp)
+	jmp		.L0
+.L2:
+.L3:
+	movl	-104(%ebp), %eax
+	pushl	%eax
+	movl	-16(%ebp), %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setl	%al
+	jl		.L4
+	jmp		.L5
+.L4:
+	movl	-104(%ebp), %eax
+	pushl	%eax
+	movl	16(%ebp), %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	8(%ebp,%eax,4), %eax
+	pushl	%eax
+	movl	-104(%ebp), %eax
+	popl	%ebx
+	movl	%ebx, -60(%ebp,%eax,4)
+	movl	-104(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -104(%ebp)
+	jmp		.L3
+.L5:
+	movl	$0, %eax
+	movl	%eax, -100(%ebp)
+	movl	$0, %eax
+	movl	%eax, -104(%ebp)
+	movl	12(%ebp), %eax
+	movl	%eax, -108(%ebp)
+.L6:
+	movl	-100(%ebp), %eax
+	pushl	%eax
+	movl	-12(%ebp), %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setne	%al
+	jne		.L9
+	jmp		.L8
+	pushl	%eax
+.L9:
+	movl	-104(%ebp), %eax
+	pushl	%eax
+	movl	-16(%ebp), %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setne	%al
+	jne		.L7
+	jmp		.L8
+	popl	%ebx
+	andl	%eax, %ebx
+	setne	%al
+.L7:
+.L10:
+	movl	-100(%ebp), %eax
+	movl	-20(%ebp,%eax,4), %eax
+	pushl	%eax
+	movl	-104(%ebp), %eax
+	movl	-60(%ebp,%eax,4), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setl	%al
+	jl		.L11
+	jmp		.L12
+.L11:
+	movl	-100(%ebp), %eax
+	movl	-20(%ebp,%eax,4), %eax
+	pushl	%eax
+	movl	-108(%ebp), %eax
+	popl	%ebx
+	movl	%ebx, 8(%ebp,%eax,4)
+	movl	-108(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -108(%ebp)
+	movl	-100(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -100(%ebp)
+	jmp		.L13
+.L12:
+	movl	-104(%ebp), %eax
+	movl	-60(%ebp,%eax,4), %eax
+	pushl	%eax
+	movl	-108(%ebp), %eax
+	popl	%ebx
+	movl	%ebx, 8(%ebp,%eax,4)
+	movl	-108(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -108(%ebp)
+	movl	-104(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -104(%ebp)
+.L13:
+	jmp		.L6
+.L8:
+.L14:
+	movl	-100(%ebp), %eax
+	pushl	%eax
+	movl	-12(%ebp), %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setl	%al
+	jl		.L15
+	jmp		.L16
+.L15:
+	movl	-100(%ebp), %eax
+	movl	-20(%ebp,%eax,4), %eax
+	pushl	%eax
+	movl	-108(%ebp), %eax
+	popl	%ebx
+	movl	%ebx, 8(%ebp,%eax,4)
+	movl	-108(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -108(%ebp)
+	movl	-100(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -100(%ebp)
+	jmp		.L14
+.L16:
+.L17:
+	movl	-104(%ebp), %eax
+	pushl	%eax
+	movl	-16(%ebp), %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setl	%al
+	jl		.L18
+	jmp		.L19
+.L18:
+	movl	-104(%ebp), %eax
+	movl	-60(%ebp,%eax,4), %eax
+	pushl	%eax
+	movl	-108(%ebp), %eax
+	popl	%ebx
+	movl	%ebx, 8(%ebp,%eax,4)
+	movl	-108(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -108(%ebp)
+	movl	-104(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -104(%ebp)
+	jmp		.L17
+.L19:
+	movl	$0, %eax
+	jmp		.LRET_Merge
+.LRET_Merge:
+	addl	$112, %esp
+	popl	%ebp
+	ret
+	.globl	MergeSort
+	.type	MergeSort, @function
+MergeSort:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$20, %esp
+.L20:
+	movl	12(%ebp), %eax
+	pushl	%eax
+	movl	16(%ebp), %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setl	%al
+	jl		.L21
+	jmp		.L22
+.L21:
+	movl	12(%ebp), %eax
+	pushl	%eax
+	movl	16(%ebp), %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	pushl	%eax
+	movl	$2, %eax
+	movl	%eax, %ebx
+	popl	%eax
+	cltd
+	idivl	%ebx
+	movl	%eax, -12(%ebp)
+	movl	-12(%ebp), %eax
+	pushl	%eax
+	movl	12(%ebp), %eax
+	pushl	%eax
+	movl	8(%ebp), %eax
+	pushl	%eax
+	call	MergeSort
+	addl	$12, %esp
+	movl	%eax, -16(%ebp)
+	movl	-12(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -16(%ebp)
+	movl	16(%ebp), %eax
+	pushl	%eax
+	movl	-16(%ebp), %eax
+	pushl	%eax
+	movl	8(%ebp), %eax
+	pushl	%eax
+	call	MergeSort
+	addl	$12, %esp
+	movl	%eax, -16(%ebp)
+	movl	16(%ebp), %eax
+	pushl	%eax
+	movl	-12(%ebp), %eax
+	pushl	%eax
+	movl	12(%ebp), %eax
+	pushl	%eax
+	movl	8(%ebp), %eax
+	pushl	%eax
+	call	Merge
+	addl	$16, %esp
+	movl	%eax, -16(%ebp)
+.L22:
+	movl	$0, %eax
+	jmp		.LRET_MergeSort
+.LRET_MergeSort:
+	addl	$20, %esp
+	popl	%ebp
+	ret
+	.globl	main
+	.type	main, @function
+main:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$60, %esp
+	movl	$10, %eax
+	movl	%eax, n
+	movl	$4, %eax
+	pushl	%eax
+	movl	$0, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$3, %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$9, %eax
+	pushl	%eax
+	movl	$2, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$2, %eax
+	pushl	%eax
+	movl	$3, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$0, %eax
+	pushl	%eax
+	movl	$4, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$1, %eax
+	pushl	%eax
+	movl	$5, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$6, %eax
+	pushl	%eax
+	movl	$6, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$5, %eax
+	pushl	%eax
+	movl	$7, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$7, %eax
+	pushl	%eax
+	movl	$8, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$8, %eax
+	pushl	%eax
+	movl	$9, %eax
+	popl	%ebx
+	movl	%ebx, -12(%ebp,%eax,4)
+	movl	$0, %eax
+	movl	%eax, -52(%ebp)
+	movl	n, %eax
+	pushl	%eax
+	movl	$1, %eax
+	movl	%eax, %ebx
+	popl	%eax
+	subl	%ebx, %eax
+	movl	%eax, -56(%ebp)
+	movl	-56(%ebp), %eax
+	pushl	%eax
+	movl	-52(%ebp), %eax
+	pushl	%eax
+	movl	-12(%ebp), %eax
+	pushl	%eax
+	call	MergeSort
+	addl	$12, %esp
+	movl	%eax, -52(%ebp)
+.L23:
+	movl	-52(%ebp), %eax
+	pushl	%eax
+	movl	n, %eax
+	popl	%ebx
+	cmpl	%eax, %ebx
+	setl	%al
+	jl		.L24
+	jmp		.L25
+.L24:
+	movl	-52(%ebp), %eax
+	movl	-12(%ebp,%eax,4), %eax
+	movl	%eax, -56(%ebp)
+	movl	-56(%ebp), %eax
+	pushl	%eax
+	movl	$.LC0, %eax
+	pushl	%eax
+	call	printf
+	addl	$8, %esp
+	movl	$10, %eax
+	movl	%eax, -56(%ebp)
+	movl	-56(%ebp), %eax
+	pushl	%eax
+	movl	$.LC1, %eax
+	pushl	%eax
+	call	printf
+	addl	$8, %esp
+	movl	-52(%ebp), %eax
+	pushl	%eax
+	movl	$1, %eax
+	popl	%ebx
+	addl	%ebx, %eax
+	movl	%eax, -52(%ebp)
+	jmp		.L23
+.L25:
+	movl	$0, %eax
+	jmp		.LRET_main
+.LRET_main:
+	addl	$60, %esp
+	popl	%ebp
+	ret
+```

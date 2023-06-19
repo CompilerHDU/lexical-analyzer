@@ -10,10 +10,10 @@ src/pch.h.gch: src/pch.h
 	g++ -x c++-header -o src/pch.h.gch -c src/pch.h
 
 lex:
-	flex -o"src\lexer.cpp" src\lexer.l
+	flex -o"src\lexer.cpp" src\\lexer.l
 
 yacc:
-	bison -o"src\parser.cpp" --defines=src\parser.h src\parser.y
+	bison -o"src\parser.cpp" --defines=src\parser.h src\\parser.y
 
 main: src/pch.h.gch
 	$(CC) $(CFLAGS) src\\*.cpp -o $(TARGET)
